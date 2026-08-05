@@ -1,0 +1,28 @@
+[project]
+name = "hls-smart-tb"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Stefan Abi-Karam", email = "stefanabikaram@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "llm>=0.31.1",
+    "llm-openrouter>=0.6",
+    "psutil>=7.2.2",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+hls-smart-tb = "hls_smart_tb:main"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+    "ruff>=0.16.1",
+]
