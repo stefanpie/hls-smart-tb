@@ -14,6 +14,7 @@ H_EXTENSIONS = [
 ]
 SOURCE_FILE_EXTENSIONS = CPP_EXTENSIONS + H_EXTENSIONS
 
+
 class BenchmarkCase:
     def __init__(
         self, design_dir: Path, name: str | None = None, tags_user: list[str] = []
@@ -42,7 +43,6 @@ class BenchmarkCase:
             raise IsADirectoryError(f"Top file {self.top_file} is a directory")
         if not self.top_file.read_text().strip():
             raise ValueError(f"Top file {self.top_file} is empty")
-
 
     @property
     def files(self) -> list[Path]:

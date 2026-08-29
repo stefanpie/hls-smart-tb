@@ -7,6 +7,7 @@ from pathlib import Path
 
 from hls_smart_tb.data import BenchmarkCase
 from hls_smart_tb.tools import VitisHLSSynthTool, auto_find_vitis_hls_dir
+from hls_smart_tb.utils import unwrap
 
 N_JOBS = 32
 
@@ -18,8 +19,7 @@ DIR_DATA = DIR_CURRENT / "data"
 if not DIR_DATA.exists():
     DIR_DATA.mkdir(parents=True)
 
-vhls_synth = VitisHLSSynthTool(auto_find_vitis_hls_dir())
-
+vhls_synth = VitisHLSSynthTool(unwrap(auto_find_vitis_hls_dir()))
 
 
 def synth_design(design_dir):
@@ -44,9 +44,13 @@ def synth_design(design_dir):
     )
     print(f"Design {design_case.name} done.")
 
+
 design_dirs = [d for d in DIR_DESIGNS.iterdir()]
 with ThreadPoolExecutor(max_workers=N_JOBS) as executor:
-    futures = {executor.submit(synth_design, design_dir): design_dir for design_dir in design_dirs}
+    futures = {
+        executor.submit(synth_design, design_dir): design_dir
+        for design_dir in design_dirs
+    }
     for future in as_completed(futures):
         # This will re-raise any exceptions from the threads
         try:

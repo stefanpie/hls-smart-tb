@@ -72,35 +72,35 @@ class DesignHLSSynthData:
         try:
             latency_data["best_case_latency"] = int(best_case_latency) # type: ignore
         except ValueError:
-            latency_data["best_case_latency"] = None # type: ignore
+            latency_data["best_case_latency"] = None
         average_case_latency = summary_of_overall_latency.find("Average-caseLatency").text # type: ignore
         try:
             latency_data["average_case_latency"] = int(average_case_latency) # type: ignore
         except ValueError:
-            latency_data["average_case_latency"] = None # type: ignore
+            latency_data["average_case_latency"] = None
         worst_case_latency = summary_of_overall_latency.find("Worst-caseLatency").text # type: ignore
         try:
             latency_data["worst_case_latency"] = int(worst_case_latency) # type: ignore
         except ValueError:
-            latency_data["worst_case_latency"] = None # type: ignore
+            latency_data["worst_case_latency"] = None
 
         if latency_data["best_case_latency"] is not None:
-            latency_data["best_case_latency_t"] = latency_data["best_case_latency"] * clock_period_t # type: ignore
+            latency_data["best_case_latency_t"] = latency_data["best_case_latency"] * clock_period_t
         else:
             latency_data["best_case_latency_t"] = None
         if latency_data["average_case_latency"] is not None:
-            latency_data["average_case_latency_t"] = latency_data["average_case_latency"] * clock_period_t# type: ignore
+            latency_data["average_case_latency_t"] = latency_data["average_case_latency"] * clock_period_t
         else:
             latency_data["average_case_latency_t"] = None
         if latency_data["worst_case_latency"] is not None:
-            latency_data["worst_case_latency_t"] = latency_data["worst_case_latency"] * clock_period_t# type: ignore
+            latency_data["worst_case_latency_t"] = latency_data["worst_case_latency"] * clock_period_t
         else:
             latency_data["worst_case_latency_t"] = None
         # fmt: on
 
         # Gather resource data
         area_estimates = root.find("AreaEstimates")
-        resource_data = {}  # type: ignore
+        resource_data = {}
         # fmt: off
         resource_data["used_abs"] = {}
         resource_data["used_abs"]["BRAM_18K"] = int(area_estimates.find("Resources").find("BRAM_18K").text)# type: ignore

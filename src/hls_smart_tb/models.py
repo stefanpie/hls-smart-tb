@@ -9,7 +9,9 @@ from llm_openrouter import OpenRouterChat
 class Model:
     name: str
     llm: llm.Model | OpenRouterChat
-    settings: dict[str, bool | int | str | float] = field(default_factory=dict)
+    settings: dict[str, bool | int | str | float | dict[str, str]] = field(
+        default_factory=dict
+    )
     other: dict[str, Any] = field(default_factory=dict)
 
 
@@ -26,7 +28,7 @@ def build_model_remote_openrouter(
         api_base="https://openrouter.ai/api/v1",
         headers={"HTTP-Referer": "https://llm.datasette.io/", "X-Title": "LLM"},
     )
-    settings = {}
+    settings: dict[str, bool | int | str | float | dict[str, str]] = {}
     if "settings" in kwargs:
         settings.update(kwargs["settings"])
     if provider is not None:

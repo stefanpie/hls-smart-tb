@@ -109,11 +109,28 @@ class ExecutionData:
     execution_time: float
     timeout: bool
 
+    def as_dict(self) -> dict:
+        return {
+            "return_code": self.return_code,
+            "stdout": self.stdout,
+            "stderr": self.stderr,
+            "t0": self.t0,
+            "t1": self.t1,
+            "execution_time": self.execution_time,
+            "timeout": self.timeout,
+        }
+
 
 @dataclass
 class ToolDataOutput:
     data_execution: ExecutionData
     data_tool: None | dict
+
+    def as_dict(self) -> dict:
+        return {
+            "data_execution": self.data_execution.as_dict(),
+            "data_tool": self.data_tool,
+        }
 
 
 class VitisHLSSynthTool:
@@ -124,7 +141,7 @@ class VitisHLSSynthTool:
         self,
         build_dir: Path,
         source_files: list[Path],
-        aux_files: list[Path] = [],
+        aux_files: list[Path] | None = None,
         build_name: str | None = None,
         build_name_prefix: str = "vitis_hls_synth_tool__",
         hls_fpga_part: str = "xczu9eg-ffvb1156-2-e",
@@ -136,6 +153,8 @@ class VitisHLSSynthTool:
         hls_compiler_defines: list[str] | None = None,
         timeout: float = 60.0 * 6,
     ) -> ToolDataOutput:
+        if aux_files is None:
+            aux_files = []
         if build_name is None:
             build_name = f"{build_name_prefix}{uuid.uuid4().hex}"
         else:
@@ -265,7 +284,7 @@ class VitisHLSCSimTool:
         self,
         build_dir: Path,
         source_files: list[Path],
-        aux_files: list[Path] = [],
+        aux_files: list[Path] | None = None,
         build_name: str | None = None,
         build_name_prefix: str = "vitis_hls_csim_tool__",
         hls_fpga_part: str = "xczu9eg-ffvb1156-2-e",
@@ -275,6 +294,8 @@ class VitisHLSCSimTool:
         warn_all: bool = False,
         timeout: float = 60.0 * 2,
     ) -> tuple[ToolDataOutput, ToolDataOutput | None]:
+        if aux_files is None:
+            aux_files = []
         if build_name is None:
             build_name = f"{build_name_prefix}{uuid.uuid4().hex}"
         else:
@@ -437,7 +458,7 @@ class VitisHLSCoSimTool:
         self,
         build_dir: Path,
         source_files: list[Path],
-        aux_files: list[Path] = [],
+        aux_files: list[Path] | None = None,
         build_name: str | None = None,
         build_name_prefix: str = "vitis_hls_csim_tool__",
         hls_fpga_part: str = "xczu9eg-ffvb1156-2-e",
@@ -447,7 +468,8 @@ class VitisHLSCoSimTool:
         warn_all: bool = False,
         timeout: float = 60.0 * 2,
     ) -> tuple[ToolDataOutput, ToolDataOutput | None]:
-        pass
+        raise NotImplementedError("VitisHLSCoSimTool is not implemented yet")
+
 
 class CPPCompilerTool:
     def __init__(self, vitis_hls_path: Path) -> None:
@@ -457,10 +479,12 @@ class CPPCompilerTool:
         self,
         build_dir: Path,
         source_files: list[Path],
-        aux_files: list[Path] = [],
+        aux_files: list[Path] | None = None,
         build_name: str | None = None,
         build_name_prefix: str = "c_compiler_tool__",
     ) -> tuple[ToolDataOutput, ToolDataOutput | None]:
+        if aux_files is None:
+            aux_files = []
         if build_name is None:
             build_name = f"{build_name_prefix}{uuid.uuid4().hex}"
         else:
@@ -515,7 +539,7 @@ class CPPCompilerTool:
         p_call.extend(CFLAGS)
 
         t_0 = time.monotonic()
-        p = subprocess.run(
+        p = subprocess.run(  # noqa: PLW1510
             p_call,
             capture_output=True,
             text=True,
@@ -543,7 +567,7 @@ class CPPCompilerTool:
             return compile_output, None
 
         t_0 = time.monotonic()
-        p = subprocess.run(
+        p = subprocess.run(  # noqa: PLW1510
             [out_bin_fp],
             capture_output=True,
             text=True,
