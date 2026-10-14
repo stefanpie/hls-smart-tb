@@ -25,10 +25,12 @@ if not DIR_DATA.exists():
 
 VITIS_HLS_PATH = unwrap(auto_find_vitis_hls_dir())
 
-MODELS = ["deepseek/deepseek-v4-flash-0731"]
+MODELS = ["deepseek/deepseek-v4.1-flash"]
 
-K = 1
+K = 5
 SAMPLE_INDEXES = list(range(K))
+
+MAX_KERNEL_CALLS = 8
 
 designs = sorted(
     [d for d in DIR_DESIGNS.iterdir() if d.is_dir()],
@@ -50,7 +52,9 @@ def run_single_comb(comb):
     run_id = f"{design.name}__{normalize_model_name(model.name)}__{sample_index}"
     work_dir = DIR_DATA / run_id
 
-    build_tb_with_model(run_id, design_case, model, work_dir, VITIS_HLS_PATH)
+    build_tb_with_model(
+        run_id, design_case, model, work_dir, VITIS_HLS_PATH, MAX_KERNEL_CALLS
+    )
     return run_id
 
 

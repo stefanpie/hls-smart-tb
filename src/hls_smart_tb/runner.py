@@ -8,6 +8,7 @@ from hls_smart_tb.models import Model
 from hls_smart_tb.prompt_processing import extract_code_markdown_from_llm_outout
 from hls_smart_tb.prompts import build_prompt_generate_tb
 from hls_smart_tb.tools import (
+    VitisHLSCoSimTool,
     VitisHLSCSimTool,
 )
 
@@ -22,6 +23,7 @@ def build_tb_with_model(
     model: Model,
     work_dir: Path,
     vitis_hls_path: Path,
+    max_kernel_calls: int,
 ) -> None:
     print(f"[{run_id}] Starting run...")
 
@@ -47,7 +49,9 @@ def build_tb_with_model(
     top_file.write_text(design_case.top_fn)
 
     print(f"[{run_id}] Building LLM prompt...")
-    prompt = build_prompt_generate_tb(source_files)
+    prompt = build_prompt_generate_tb(
+        source_files, design_case.top_fn, max_kernel_calls
+    )
 
     fp_prompt = work_dir / "llm_prompt.txt"
     fp_prompt.write_text(prompt)
@@ -99,6 +103,29 @@ def build_tb_with_model(
     )
     data["csim_compile_output"] = r_compile.as_dict()
     data["csim_run_output"] = r_run.as_dict() if r_run is not None else None
+
+    csim_ok = r_run is not None and r_run.data_execution.return_code == 0
+    if not csim_ok:
+        print(f"[{run_id}] C simulation failed, skipping csynth/cosim")
+        dump_to_run_data(run_data_fp, data)
+        return
+    data["csim_ok"] = True
+
+    print(f"[{run_id}] Running C synthesis and C/RTL co-simulation...")
+    cosim_tool = VitisHLSCoSimTool(vitis_hls_path)
+    r_cosim = cosim_tool.run(
+        work_dir,
+        source_files,
+        aux_files=[tb_cpp_path],
+        hls_top_function=design_case.top_fn,
+    )
+    data["cosim_output"] = r_cosim.as_dict()
+    data["cosim_ok"] = r_cosim.data_tool is not None
+    if r_cosim.data_tool is not None:
+        data["data_synthesis"] = r_cosim.data_tool["data_synthesis"]
+        data["data_cosim"] = r_cosim.data_tool["data_cosim"]
+    else:
+        print(f"[{run_id}] csynth/cosim failed")
 
     dump_to_run_data(run_data_fp, data)
     print(f"[{run_id}] Finished run!")
